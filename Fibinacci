@@ -1,0 +1,24 @@
+#include <stdio.h>
+
+#define MAX_SIZE 20
+
+int main() {
+    int fibonacci[MAX_SIZE];
+    
+    // Inicializamos los primeros dos elementos de la serie Fibonacci
+    fibonacci[0] = 0;
+    fibonacci[1] = 1;
+    
+    // Generamos el resto de la serie Fibonacci
+    for (int i = 2; i < MAX_SIZE; i++) {
+        fibonacci[i] = fibonacci[i - 1] + fibonacci[i - 2];
+    }
+    
+    // Mostramos la serie Fibonacci
+    printf("Serie Fibonacci:\n");
+    for (int i = 0; i < MAX_SIZE; i++) {
+        printf("%d ", fibonacci[i]);
+    }
+    
+    return 0;
+}
