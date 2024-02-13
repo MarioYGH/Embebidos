@@ -33,7 +33,7 @@ esp_err_t pin_initialize(){ //Función para inicializar pin de forma automática
     gpio_reset_pin(LED); //Inicializa pin
     gpio_set_direction(LED, GPIO_MODE_OUTPUT); //Salida
     gpio_reset_pin(BOTON); //Inicializa pin
-    gpio_set_direction(LED, GPIO_MODE_INPUT); //Entrada 
+    gpio_set_direction(BOTON, GPIO_MODE_INPUT); //Entrada 
 
     return ESP_OK; //Retorna al codigo
 }
