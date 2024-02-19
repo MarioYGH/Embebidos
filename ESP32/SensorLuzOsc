@@ -1,81 +1,105 @@
-/*
-Programa para el ESP32 que enciende un LED en el modo de "hola mundo"
-AUTOR: Mario García
-Fecha de creacion: 14/02/2024
-*/
-#include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include <driver/gpio.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
-//constantes
-#define Sensorosc 25 
-#define sensorluz 25
-#define OFF 4 //Botón
-#define BUZZER 22
+#define BUZZER 27
+#define SENSOR_LUZ 23
+#define SENSOR_OS 25
+#define BOTON 33
+
+int state;
+int bot_state = 1;
 
 
-//funciones
-esp_err_t pin_initialize();
+esp_err_t pin_initialiize();
+esp_err_t init_irs();
+void isr_handler(void *args);
 
 void app_main(void)
-{ 
-    int caso = 0;
-    int boton=0;
+{
 
-    pin_initialize(); //llamamos nuestra funcion para inicializar puertos 
-    
-    while(1){
 
-        boton=gpio_get_level(OFF);
+    pin_initialiize(); //reinicia el pin 
+    init_irs();
 
-        if (boton==1){
-            caso++;
-        }
+    while(true){
+
+
         
-        switch(caso){
+            while(bot_state==1){
+                
+                vTaskDelay(pdMS_TO_TICKS(500));
+                
+                state=gpio_get_level(SENSOR_LUZ);
+                gpio_set_level(BUZZER,state);
 
-            case 1:
-            if (sensorluz == 1){
-            gpio_set_level(BUZZER, 1);
+                printf("estoy en sensor de luz %d\n", state);
 
-        }else{
-              //comprobamos que nuestra alarma siga a pagada si no detecta nada 
-            gpio_set_level(BUZZER, 0);
-        }
-            break;
+            }
+            
+            while(bot_state==0){
 
-            case 2:
-             if (Sensorosc == 1){
-            gpio_set_level(BUZZER, 1);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                
+                state=gpio_get_level(SENSOR_OS);
+                gpio_set_level(BUZZER,state);
 
-        }else{
-              //comprobamos que nuestra alarma siga a pagada si no detecta nada 
-            gpio_set_level(BUZZER, 0);
-        }
-            break;
+                printf("estoy en sensor de obscuridad %d\n", state);
 
-            default:
-            caso = 0;
-            break;
-        }
+            }
+
+
+        
+
     }
+
+
 }
 
 
-
-//la siguiente es una funcion para inicialisar el pin  del led Y BUZZER para que funcione como salida  y sensor ir y off como entrada
-esp_err_t pin_initialize() {
-    gpio_reset_pin(Sensorosc);
-    gpio_set_direction(Sensorosc, GPIO_MODE_INPUT);
+//incializa el pin y retorna un error o no error de tip esp_err_t
+esp_err_t pin_initialiize(){
 
     gpio_reset_pin(BUZZER);
     gpio_set_direction(BUZZER, GPIO_MODE_OUTPUT);
 
-    gpio_reset_pin(sensorluz);
-    gpio_set_direction(sensorluz, GPIO_MODE_INPUT);
+    gpio_reset_pin(SENSOR_LUZ);
+    gpio_set_direction(SENSOR_LUZ, GPIO_MODE_INPUT);
 
-    gpio_reset_pin(OFF);
-    gpio_set_direction(OFF, GPIO_MODE_INPUT);
+    gpio_reset_pin(SENSOR_OS);
+    gpio_set_direction(SENSOR_OS, GPIO_MODE_INPUT);
+
+    gpio_reset_pin(BOTON);
+    gpio_set_direction(BOTON, GPIO_MODE_INPUT);
 
     return ESP_OK;
+}
+
+esp_err_t init_irs(void) {
+
+    gpio_config_t pGPIOConfig;
+    pGPIOConfig.pin_bit_mask = (1ULL << BOTON);
+    pGPIOConfig.mode = GPIO_MODE_DEF_INPUT;
+    pGPIOConfig.pull_up_en = GPIO_PULLUP_DISABLE;
+    pGPIOConfig.pull_down_en = GPIO_PULLUP_DISABLE;
+    pGPIOConfig.intr_type = GPIO_INTR_NEGEDGE;
+
+    gpio_config(&pGPIOConfig);
+
+    gpio_install_isr_service(0); //habilita global interrupts
+    gpio_isr_handler_add(BOTON, isr_handler, NULL); //pin y funcion a ejecutar
+
+    return ESP_OK;
+
+}
+
+void isr_handler(void *args){
+
+    if(bot_state == 1){
+        bot_state = 0;
+    }
+    else {
+        bot_state = 1;
+    }
+    
 }
