@@ -43,7 +43,7 @@ void check_alarm() {
         gpio_set_level(BUZZER, 0);
       }*/
 
-    if(gpio_get_level(OFF) == 1) { // Se presiona el botón de apagado
+    if(gpio_get_level(OFF) == 0) { // Se presiona el botón de apagado
         printf("Botón de apagado presionado - Apagando alarma\n");
         gpio_set_level(LED, 0); // Apagar alarma
         gpio_set_level(BUZZER, 0);
