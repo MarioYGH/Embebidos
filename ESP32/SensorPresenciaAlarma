@@ -7,39 +7,51 @@ Fecha de creacion: 14/02/2024
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-//constantes
+// Constantes
 #define LED 25
-#define SIR 18  //sensor IR de presencia
+#define SIR 18  // Sensor IR de presencia
 #define OFF 19
 #define BUZZER 22
 
-//funciones
+// Prototipos de función
 esp_err_t pin_initialize();
+void check_alarm();
 
 void app_main(void)
 { 
-    int botonoff = 0; //variable que guarda el valor de paro de la alarma 
-    pin_initialize(); //llamamos nuestra funcion para inicializar puertos 
+    // Inicializar pines
+    pin_initialize();
+
     while(1){
-        botonoff = gpio_get_level(OFF); //guardamos el valor del boton de apagado
-        if(gpio_get_level(SIR) == 1){ //preguntamos si el sensor de presencia detecto algo
-            while (botonoff== 0 ){ //corroboramos si la alarma no ha sido apagada
+        // Comprobar la alarma
+        check_alarm();
 
-                gpio_set_level(LED,1); //endendemos las luces
-                gpio_set_level(BUZZER, 1); //encendemos bocinas
-
-                botonoff = gpio_get_level(OFF); //corroboramos si la alarma no se ha apagado 
-            }
-            gpio_set_level(LED,0); //apagamos la alarma despues de presionar el boton de apagado
-            gpio_set_level(BUZZER, 0);
-        }else{
-            gpio_set_level(LED,0);  //comprobamos que nuestra alarma siga a pagada si no detecta nada 
-            gpio_set_level(BUZZER, 0);
-        }
+        // Pequeño retraso para evitar consumo excesivo de CPU
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 }
 
-//la siguiente es una funcion para inicialisar el pin  del led Y BUZZER para que funcione como salida  y sensor ir y off como entrada
+void check_alarm() {
+    if(gpio_get_level(SIR) == 1){ // Se detecta movimiento
+        printf("Movimiento detectado - Activando alarma\n");
+        gpio_set_level(LED, 1); // Encender luces
+        gpio_set_level(BUZZER, 1); // Encender alarma
+    }
+   /*  else {
+        printf("Sin movimiento - Desactivando alarma\n");
+        gpio_set_level(LED, 0); // Apagar la alarma si no se detecta movimiento
+        gpio_set_level(BUZZER, 0);
+      }*/
+
+    if(gpio_get_level(OFF) == 0) { // Se presiona el botón de apagado
+        printf("Botón de apagado presionado - Apagando alarma\n");
+        gpio_set_level(LED, 0); // Apagar alarma
+        gpio_set_level(BUZZER, 0);
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // Pequeño retraso para evitar problemas de rebote
+    }
+}
+
+// Inicializar pines
 esp_err_t pin_initialize() {
     gpio_reset_pin(LED);
     gpio_set_direction(LED, GPIO_MODE_OUTPUT);
@@ -51,7 +63,7 @@ esp_err_t pin_initialize() {
     gpio_set_direction(SIR, GPIO_MODE_INPUT);
 
     gpio_reset_pin(OFF);
-    gpio_set_direction(OFF, GPIO_MODE_INPUT);
+    gpio_set_direction(OFF, GPIO_MODE_INPUT); // Configurar el pin 19 como entrada con pull-up interno
 
     return ESP_OK;
 }
