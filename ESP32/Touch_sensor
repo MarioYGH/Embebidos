@@ -1,0 +1,60 @@
+/* touch sensor pin 4
+ 
+AUTOR: Mario García
+Fecha de creacion: 20/02/2024
+*/
+#include <stdio.h>
+#include "driver/gpio.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include <driver/touch_pad.h>
+
+// Constantes
+#define TOUCH_SENSOR TOUCH_PAD_NUM0 
+
+uint16_t raw_value;
+
+// Prototipos de función
+esp_err_t pin_initialize();
+esp_err_t get_touchpad_value();
+
+
+
+void app_main(void)
+{ 
+    // Inicializar pines
+    pin_initialize();
+
+    while(1){
+        get_touchpad_value();
+        printf("Raw data: %d\n", raw_value);
+        vTaskDelay(pdMS_TO_TICKS(100));
+
+
+    }
+}
+
+
+// Inicializar pines
+esp_err_t pin_initialize() {
+    //Inicializa el driver del touch pad 
+    touch_pad_init();
+
+    //Configuracion del touch pad
+    touch_pad_config( TOUCH_SENSOR,-1 );
+    touch_pad_set_voltage( TOUCH_HVOLT_2V7, TOUCH_LVOLT_0V8, TOUCH_HVOLT_ATTEN_KEEP);
+    touch_pad_filter_start( 100 ); //Filtro para porcesar el ruido de falsos disparos de capacitancia
+
+    
+
+    return ESP_OK;
+}
+ 
+esp_err_t get_touchpad_value() {
+    //Tomamos lecturas en el touch pad
+    touch_pad_read_raw_data( TOUCH_SENSOR, &raw_value );
+
+    //Filtrar mediciones 
+
+    return ESP_OK;
+}
