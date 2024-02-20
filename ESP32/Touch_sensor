@@ -1,4 +1,4 @@
-/* touch sensor pin 4
+/*
  
 AUTOR: Mario García
 Fecha de creacion: 20/02/2024
@@ -10,9 +10,11 @@ Fecha de creacion: 20/02/2024
 #include <driver/touch_pad.h>
 
 // Constantes
-#define TOUCH_SENSOR TOUCH_PAD_NUM0 
+#define TOUCH_SENSOR TOUCH_PAD_NUM0 //Pin 4
 
 uint16_t raw_value;
+uint16_t value;
+uint16_t filtered_value;
 
 // Prototipos de función
 esp_err_t pin_initialize();
@@ -27,7 +29,7 @@ void app_main(void)
 
     while(1){
         get_touchpad_value();
-        printf("Raw data: %d\n", raw_value);
+        printf("TOUCH_SENSOR = %d Raw_value = %d filtered_value = %d\n", value, raw_value, filtered_value);
         vTaskDelay(pdMS_TO_TICKS(100));
 
 
@@ -55,6 +57,8 @@ esp_err_t get_touchpad_value() {
     touch_pad_read_raw_data( TOUCH_SENSOR, &raw_value );
 
     //Filtrar mediciones 
+    touch_pad_read_filtered(TOUCH_SENSOR, &filtered_value);
+    touch_pad_read(TOUCH_SENSOR, &value);
 
     return ESP_OK;
 }
