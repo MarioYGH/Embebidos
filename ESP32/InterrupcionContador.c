@@ -47,3 +47,9 @@ esp_err_t init_iris(){
     return ESP_OK;
 
 }
+
+void isr_handler(void *args){
+
+counter ++;
+    
+}
