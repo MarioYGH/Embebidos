@@ -16,14 +16,16 @@ last modified: 29/02/24
 #include "esp_log.h"
 #include "dht.h"
 
+//sensores Temperatura
 #define DHTPIN GPIO_NUM_26
 #define ADC1_CHAN0 ADC_CHANNEL_4 //7 Pin 32
 #define ADC_ATTEN ADC_ATTEN_DB_11
+//salidas
 #define BUZZER 18
 #define LEDR 21
-#define LEDG 22
-#define LEDY 23
-//#define OFF 19
+#define LEDG 23
+#define LEDY 22
+//Entradas
 #define BUTTON_ISR 34
 
 adc_oneshot_unit_handle_t adc1_handle;
@@ -43,7 +45,6 @@ esp_err_t pin_initialize();
 esp_err_t condicionAlarma();
 
 const char *TAG = "DHT22 SENSOR";
-const char *TAG2 = "Alarma";
 
 gpio_num_t dht_gpio = DHTPIN; //Digital pin connected to the DHT
 dht_sensor_type_t sensor_type = DHT_TYPE_AM2301; //Para DHT11 -> DHT_TYPE_DH11
@@ -145,7 +146,7 @@ esp_err_t get_ADC_value(){
 esp_err_t condicionAlarma() {
     //condiciones para sonido de alarma 
 
-    if(tempfin<29){  // si la temp cumple voltage>29&&voltage<35 suena lento
+    if(tempfin<29){  // LED verde, todo OK
         //printf("Aumento de temperatura - Activando alarma\n");
         gpio_set_level(LEDG, 1);
         gpio_set_level(LEDY, 0);
@@ -154,16 +155,17 @@ esp_err_t condicionAlarma() {
 
         }
 
-       if(tempfin>29&&tempfin<35){ // Se detecta incremento en temperatura 
+       if(tempfin>29&&tempfin<35){ // Se detecta incremento en temperatura, LED amarillo
         //vTaskDelay(pdMS_TO_TICKS(300));
         gpio_set_level(LEDY, 1); // Encender alarma
         gpio_set_level(LEDG, 0);
         gpio_set_level(LEDR, 0);
+        buzzerON = 0; // vuelve a activar la posibilidad de encende el buzzer por si aca
 
         
  
     } 
-        if(/* voltage*/tempfin>35){ // Se detecta superacion de 40 grados 
+        if(/* voltage*/tempfin>35){ // Se detecta superacion de 35 grados, enciende buzzer y LED rojo
         //printf("Aumento de temperatura - Activando alarma\n");
         gpio_set_level(LEDY, 0); // Encender alarma
         gpio_set_level(LEDG, 0);
@@ -199,9 +201,8 @@ esp_err_t init_iris(){
 ///////////////////////////////////////////////////////////////////
 
 void isr_handler(void *args){
-ESP_LOGI(TAG2, "Se apaga buzzer");
     
-buzzerON ++;
+buzzerON ++; //Ojo aqui, para esta funcion no usar el ESP_LOGI(TAG // no se muy bien pq pero reinicia el codigo en lugar de hacer una interrupcion
 }
 
 /////////////////////////////////////////////////////////
