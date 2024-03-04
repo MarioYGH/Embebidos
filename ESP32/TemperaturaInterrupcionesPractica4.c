@@ -3,7 +3,7 @@ Autor: Mario García
 Programa ESP32 Sacando el promedio de las temperaturas de LM35 y DHT22, encendemos diferentes LEDs,
 con la ultima condición encendemos un buzzer y led y con un botón interrupcion, apagamos solo el buzzer pero no el LED
 date created: 29/02/24
-last modified: 29/02/24
+last modified: 03/02/24
 */
 
 
