@@ -17,14 +17,14 @@ last modified: 29/02/24
 #include "dht.h"
 
 #define DHTPIN GPIO_NUM_26
-#define ADC1_CHAN0 ADC_CHANNEL_7 //7 Pin 35
+#define ADC1_CHAN0 ADC_CHANNEL_4 //7 Pin 32
 #define ADC_ATTEN ADC_ATTEN_DB_11
-#define BUZZER 22
-#define LEDR 16
-#define LEDG 18
-#define LEDY 32
+#define BUZZER 18
+#define LEDR 21
+#define LEDG 22
+#define LEDY 23
 //#define OFF 19
-#define BUTTON_ISR 33
+#define BUTTON_ISR 34
 
 adc_oneshot_unit_handle_t adc1_handle;
 
