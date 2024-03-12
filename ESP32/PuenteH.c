@@ -1,11 +1,12 @@
+#include <stdio.h>
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
 
 
-#define M1_A 10
-#define M1_B 11
+#define M1_A 32
+#define M1_B 33
 #define L 0
 #define H 1
 
@@ -21,11 +22,11 @@ void app_main(){
 
     while(1){
         ESP_ERROR_CHECK(forward());
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(3000)); //delay de 3000
         ESP_ERROR_CHECK(reverse()); // usamos errorcheck para ver si esta bien
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(3000));//delay de 3000
         ESP_ERROR_CHECK(stop());
-        vTaskDelay(pdMS_TO_TICKS(3000));
+        vTaskDelay(pdMS_TO_TICKS(3000));//delay de 3000
     }
 }
 
