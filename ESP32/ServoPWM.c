@@ -56,7 +56,7 @@ void app_main(void){
         ESP_ERROR_CHECK(mcpwm_comparator_set_compare_value(comparator, angle_to_compare(angle)));
 
         /* Add delay, since it takes time for servo to rotate, usually 200ms/60degree rotation under 5V power supply */
-        vTaskDelay(pdMS_TO_TICKS(500));
+        vTaskDelay(pdMS_TO_TICKS(200));
     }       
 }
 
