@@ -26,7 +26,7 @@ last modified: 11/03/24
 
 static const char *TAG = "PWM servo"; //SERVO
 static int adc_raw;  //ADC
-static float voltage; //ADC
+//static float voltage; //ADC
 
 adc_oneshot_unit_handle_t adc1_handle; //ADC
 
@@ -46,7 +46,7 @@ void app_main(void){
     config_ADC(); 
     mcpwm_config();
 
-    int step = 0;
+    //int step = 0;
 
     while (1) {
         get_ADC_value();
@@ -136,14 +136,14 @@ esp_err_t config_ADC() {
 esp_err_t get_ADC_value(){
 
     adc_oneshot_read(adc1_handle, ADC1_CHAN0, &adc_raw);
-    //printf("Raw data: %d\n", adc_raw);
+    /*
+    printf("Raw data: %d\n", adc_raw);
 
     voltage = (adc_raw * 3.3 / 4095.0); //importante poner el cero, para que lo detecte como flotante pq sino pone ceros
-    //printf("Voltage: %2.2f V\n", voltage);
-
-    angle = voltage * (180.0 / 3.3); // Convertir directamente de voltaje a grados
-    printf("Degrees: %d\n", angle);
+    printf("Voltage: %2.2f V\n", voltage);
+    */
+    angle = ((adc_raw * 3.3 / 4095.0) * (180.0 / 3.3)); //importante poner el cero, para que lo detecte como flotante pq sino pone ceros
+    //printf("Voltage: %2.2d V\n", angle);
 
     return ESP_OK;
-
 }
