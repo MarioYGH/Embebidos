@@ -1,6 +1,6 @@
 /*
 Author: Mario García - marioygh15@gmail.com
-Programa ESP32, Comunicación de entre dos ESPs para encender LEDs
+Programa ESP32, Comunicación serial ESP para encender LEDs, Es necesario un puerto para poder escribir en el monitor serial
 date created: 27/03/24
 last modified: 27/03/24
 */
