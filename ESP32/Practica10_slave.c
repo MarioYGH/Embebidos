@@ -137,6 +137,6 @@ esp_err_t uart_initialize(){
 }
 
 void app_main(){
-    
+    ESP_ERROR_CHECK(pinout_initialize());
     uart_initialize(); 
 }
