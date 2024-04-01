@@ -2,7 +2,7 @@
 Author: Mario García - marioygh15@gmail.com
 Programa ESP32, Practica 10, comunicacion serial entre ESPs, este se encarga del puente H
 date created: 27/03/24
-last modified: 27/03/24
+last modified: 01/04/24
 */
 
 #include <stdio.h>
@@ -70,6 +70,12 @@ esp_err_t stop(){
 static void uart_task(void *pvParameters)
 {
 uint8_t *data = (uint8_t *) malloc(BUF_SIZE); //puntero para almacenar la data que llega
+char* R_str = "255\r\n";
+char* B_str = "200";
+char* G_str = "45";
+char* str[80];
+
+
 
     while (true) {
         /* Clear space memory */
@@ -90,30 +96,28 @@ uint8_t *data = (uint8_t *) malloc(BUF_SIZE); //puntero para almacenar la data q
         ESP_LOGI(TAG, "Data recived: %s",data); //imprimimos en consola lo que acaba de llegar
     
 
-        for (size_t i=0; i < len -2; i++) //for por cada elemento que llegue en Data y quitamos salto de /r/n
-        {
-            char value = data[i];
+        char data_str[len + 1]; // Buffer para almacenar los datos como una cadena terminada en null
+        memcpy(data_str, data, len); // Copiar los datos recibidos al buffer de cadena
+        data_str[len] = '\0'; // Asegurarse de que la cadena esté terminada en null
 
-            switch (value)
-            {
-            case 'R': //Rojo
-                ESP_ERROR_CHECK(stop());
-                break;
 
-            case 'G': //Verde
-                ESP_ERROR_CHECK(forward());
-                break;
-
-            case 'B': //Azul
-                ESP_ERROR_CHECK(reverse());
-                break;
-            
-            default:
-                ESP_ERROR_CHECK(stop());
-                break;
+            if(!strcmp(R_str, data_str)){
+            ESP_ERROR_CHECK(stop());
+            vTaskDelay(pdMS_TO_TICKS(500));
             }
 
-        }
+            if(!strcmp(G_str,data_str)){
+            ESP_ERROR_CHECK(forward());
+            vTaskDelay(pdMS_TO_TICKS(500));
+            }
+
+            if(!strcmp(B_str,data_str)){
+            ESP_ERROR_CHECK(reverse());
+            vTaskDelay(pdMS_TO_TICKS(500));
+            }
+            
+
+        
     }
 }
 
