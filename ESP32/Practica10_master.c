@@ -1,8 +1,8 @@
 /*
 Author: Mario García - marioygh15@gmail.com
-Programa ESP32, Practica 10, comunicacion serial entre ESPs, este se encarga del puente H
+Programa ESP32, Practica 10, comunicacion serial entre ESPs, se encarga de escribir el valor del sensor RGB
 date created: 27/03/24
-last modified: 27/03/24
+last modified: 01/04/24
 */
 
 #include <stdio.h>
@@ -32,10 +32,8 @@ int voltage1;
 
 esp_err_t config_ADC();
 esp_err_t get_ADC_value();
-esp_err_t pin_initialize();
 
 adc_oneshot_unit_handle_t adc1_handle;
-
 
 esp_err_t uart_initialize(); //Uart
 
@@ -93,31 +91,15 @@ esp_err_t uart_initialize(){
 void app_main(){
     config_ADC(); 
     uart_initialize(); 
-    char *dataR = "R\r\n";
-    char *dataG = "G\r\n";
-    char *dataB = "B\r\n";
     char str[50];
 
     while (1) {
 
         get_ADC_value();
-        if( voltage1<45) { //paro
-        uart_write_bytes(UART_PORT, (const char *)dataR,3);
-        ESP_LOGI(TAG, "data %s",dataR);
-        }
 
-        if( 85>voltage1 && voltage1>75) { //rojo
-        uart_write_bytes(UART_PORT, (const char *)dataR,3);
-        ESP_LOGI(TAG, "data %s",dataR);
-        }
-        else if( 45<voltage1 && voltage1<50 ){ //verde
-        uart_write_bytes(UART_PORT, (const char *)dataG,3);
-        ESP_LOGI(TAG, "data %s",dataG);
-        }
-        else if( 55<voltage1 && voltage1<65){ //Azul
-        uart_write_bytes(UART_PORT, (const char *)dataB,3);
-        ESP_LOGI(TAG, "data %s",dataB);
-        }
+        const int len = strlen(str); //cuenta tamaño de la cadena //len tiene el tamaño de la cadena
+        uart_write_bytes(UART_PORT, str, len); //longitud de la cadena, se puede poner len-1, etc para cortar un caracter
         sprintf(str, "/*%d", voltage1);
+        vTaskDelay(pdMS_TO_TICKS(200));
     }
 }
