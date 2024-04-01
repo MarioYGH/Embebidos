@@ -19,16 +19,21 @@
 #include "esp_gap_bt_api.h"
 #include "esp_bt_device.h"
 #include "esp_spp_api.h"
+#include "driver/gpio.h"
 
 #include "time.h"
 #include "sys/time.h"
 
-#define SPP_TAG "Robotsumo"
+#define SPP_TAG "SPP CLASS"
 #define SPP_SERVER_NAME "SPP_SERVER"
-#define EXAMPLE_DEVICE_NAME "Fabi"
+#define EXAMPLE_DEVICE_NAME "COMPANIERITO"
 #define SPP_SHOW_DATA 0
 #define SPP_SHOW_SPEED 1
 #define SPP_SHOW_MODE SPP_SHOW_DATA    /*Choose show mode: show data or speed*/
+
+#define LED 2
+#define ON 1
+#define OFF 0
 
 static const esp_spp_mode_t esp_spp_mode = ESP_SPP_MODE_CB;
 static const bool esp_spp_enable_l2cap_ertm = true;
@@ -61,6 +66,25 @@ static void print_speed(void)
     data_num = 0;
     time_old.tv_sec = time_new.tv_sec;
     time_old.tv_usec = time_new.tv_usec;
+}
+
+esp_err_t initialize_LED(){
+    gpio_reset_pin(LED);
+    gpio_set_direction(LED, GPIO_MODE_OUTPUT);
+
+    return ESP_OK;
+}
+
+esp_err_t turn_on_LED(){
+    gpio_set_level(LED, ON);
+
+    return ESP_OK;
+}
+
+esp_err_t turn_off_LED(){
+    gpio_set_level(LED, OFF);
+
+    return ESP_OK;
 }
 
 static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
@@ -107,38 +131,23 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
          * rather than in this callback directly. Since the printing takes too much time, it may stuck the Bluetooth
          * stack and also have a effect on the throughput!
          */
-        ESP_LOGI(SPP_TAG, "ESP_SPP_DATA_IND_EVT len:%d handle:%"PRIu32,
+        /*ESP_LOGI(SPP_TAG, "ESP_SPP_DATA_IND_EVT len:%d handle:%"PRIu32,
                  param->data_ind.len, param->data_ind.handle);
-        /*if (param->data_ind.len < 128) {
+        if (param->data_ind.len < 128) {
             esp_log_buffer_hex("", param->data_ind.data, param->data_ind.len);
-        }
-        */
-        for (size_t k = 0; k < (param -> data_ind.len)-2; k++){ ///Se puede quitar el for
-            char val = param -> data_ind.data[k]; //
+        } */
 
-            switch (val){
-
-            case 'A':
-                ESP_LOGI(SPP_TAG, "Adelante Lol q bien");
+        switch (param->data_ind.data[0]) {
+            case '1':
+            turn_on_LED();
             break;
-
-            case 'R':
-                ESP_LOGI(SPP_TAG, "Reversa");
+            case '0': 
+            turn_off_LED();
             break;
-
-            case 'I':
-                ESP_LOGI(SPP_TAG, "Izquierda");
-            break;
-
-            case 'D':
-                ESP_LOGI(SPP_TAG, "Derecha");
-            break;
-            
-            
             default:
-                break;
-            }
-        }
+            break;
+    
+        } 
 #else
         gettimeofday(&time_new, NULL);
         data_num += param->data_ind.len;
@@ -229,6 +238,7 @@ void esp_bt_gap_cb(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param_t *param)
 
 void app_main(void)
 {
+    initialize_LED();
     char bda_str[18] = {0};
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
