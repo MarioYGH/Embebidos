@@ -144,22 +144,28 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
         }// Buffer para almacenar los datos como una cadena terminada en null
         memcpy(data_str, param->data_ind.data, param->data_ind.len); // Copiar los datos recibidos al buffer de cadena
         data_str[param->data_ind.len] = '\0';
+        
+        for (size_t i = 0; i < param->data_ind.len; i++){
+            if (data_str[i] == '\r' || data_str[i] == '\n') {
+            data_str[i] = '\0'; // Reemplazar '\r' o '\n' con el carácter nulo
+            break; // Salir del bucle una vez que se encuentre el primer '\r' o '\n'
+             }
+        }
 
         ESP_LOGI(SPP_TAG, "Data received: %s", data_str); // Imprime la cadena recibida
 
-        if (!strcmp(data_str, "ON\r\n")) {
+        if (!strcmp(data_str, "ON")) {
             ESP_LOGI(SPP_TAG, "ON");
             turn_on_LED();
-            free(data_str);
-    } else if (!strcmp(data_str,"OFF\r\n")) {
+            
+    } else if (!strcmp(data_str,"OFF")) {
             ESP_LOGI(SPP_TAG, "OFF");
             turn_off_LED();
-            free(data_str);
 
         } else {
             ESP_LOGI(SPP_TAG, "Comando no reconocido");
-            free(data_str);
         }
+        free(data_str);
 
 #else
         gettimeofday(&time_new, NULL);
