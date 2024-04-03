@@ -23,13 +23,17 @@ static const char *TAG = "example";
 #define BDC_MCPWM_TIMER_RESOLUTION_HZ 10000000 // 10MHz, 1 tick = 0.1us
 #define BDC_MCPWM_FREQ_HZ             25000    // 25KHz PWM
 #define BDC_MCPWM_DUTY_TICK_MAX       (BDC_MCPWM_TIMER_RESOLUTION_HZ / BDC_MCPWM_FREQ_HZ) // maximum value we can set for the duty cycle, in ticks
-#define BDC_MCPWM_GPIO_A              7
-#define BDC_MCPWM_GPIO_B              15
+///Motor uno
+#define BDC_MCPWM_GPIO_A 2
+#define BDC_MCPWM_GPIO_B 15
+///Motor dos
+#define BDC_MCPWM_GPIO_C              8
+#define BDC_MCPWM_GPIO_D             16
+
 
 
 void app_main(void)
 {
-
     ESP_LOGI(TAG, "Create DC motor"); //de aquí a importante para un nuevo motor
     bdc_motor_config_t motor_config = {
         .pwm_freq_hz = BDC_MCPWM_FREQ_HZ,
@@ -48,6 +52,7 @@ void app_main(void)
 
 
     while (1) {
+    bdc_motor_set_speed(motor,300);
     
     ESP_LOGI(TAG, "Forward motor");
     ESP_ERROR_CHECK(bdc_motor_forward(motor));
