@@ -13,38 +13,37 @@
 #include "esp_gap_bt_api.h"
 #include "esp_bt_device.h"
 #include "esp_spp_api.h"
-#include "driver/gpio.h"
+#include <driver/gpio.h>
 
 #include "time.h"
 #include "sys/time.h"
 
 #include "driver/mcpwm_prelude.h"
-#include "esp_adc/adc_oneshot.h"
+#include "esp_adc/adc_oneshot.h" //Para hacer lecturas Oneshot o continuas
 
-/////////Servo 
+/////////////////servo 
 #define SERVO_MIN_PULSEWIDTH_US 500 /* Minimum pulse width in microsecond */
 #define SERVO_MAX_PULSEWIDTH_US 2400 /* Maximum pulse width in microsecond */
 #define SERVO_MIN_DEGREE 0 /* Minimum angle */
 #define SERVO_MAX_DEGREE 180 /* Maximum angle */
 #define SERVO_PULSE_GPIO 21 /* GPIO connects to the PWM signal line */
-#define SERVO_PULSE_GPIO2 19 /* GPIO connects to the PWM signal line */
+#define SERVO_PULSE_GPIO2 22 /* GPIO connects to the PWM signal line */
 #define SERVO_TIMEBASE_RESOLUTION_HZ 1000000 /* 1MHz, 1us per tick */
 #define SERVO_TIMEBASE_PERIOD 20000 /* 20000 ticks, 20ms */
-////////////////////////
-#define LEDR 12
-#define LEDG 13
-#define BUZZER 25
-#define SENSOR_IR 14
+/////////////////////////////
+#define LEDR 2
+#define LEDG 5
+#define BUZZER 4
+#define SENSOR_IR 18
 #define TAG1 "LOG"
-//////////////////Bluetooth
-#define SPP_TAG "SPP CLASS"
+/////////////////////////Bluetooth
+#define SPP_TAG "SPP_ACCEPTOR_DEMO"
 #define SPP_SERVER_NAME "SPP_SERVER"
-#define EXAMPLE_DEVICE_NAME "COMPANIERITO"
+#define EXAMPLE_DEVICE_NAME "ESP_SPP_ACCEPTOR"
 #define SPP_SHOW_DATA 0
 #define SPP_SHOW_SPEED 1
 #define SPP_SHOW_MODE SPP_SHOW_DATA    /*Choose show mode: show data or speed*/
 
-int dato_ingresado = 0;
 char *user1 = "Benito";
 char *pass1 = "a123bcd";
 char *user = "";
@@ -63,7 +62,7 @@ bool incorrect_ind = true;
 void tarea_paralela(void *pvParameters); 
 void mover_servo(void *pvParameters);
 
-//servo
+///////////////servo
 static const char *TAG = "PWM servo";
 char val;
 
@@ -77,6 +76,7 @@ mcpwm_gen_handle_t generator2= NULL;
 esp_err_t mcpwm_config();
 static inline uint32_t angle_to_compare1(int angle1);
 static inline uint32_t angle_to_compare2(int angle2);
+
 
 static const esp_spp_mode_t esp_spp_mode = ESP_SPP_MODE_CB;
 static const bool esp_spp_enable_l2cap_ertm = true;
@@ -199,6 +199,7 @@ static inline uint32_t angle_to_compare1(int angle2){
 }
 //servo final
 
+
 static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
 {
     char bda_str[18] = {0};
@@ -238,27 +239,25 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
     case ESP_SPP_DATA_IND_EVT:
 
 #if (SPP_SHOW_MODE == SPP_SHOW_DATA)
-    char *data_str = (char *)malloc(param->data_ind.len + 1);
-    if (data_str == NULL) {
-        ESP_LOGE(SPP_TAG, "Error al asignar memoria para data_str");
-        return;
-    }
-    // Copiar los datos recibidos al buffer de cadena
-    memcpy(data_str, param->data_ind.data, param->data_ind.len);
-    data_str[param->data_ind.len] = '\0'; // Asegurarse de que la cadena esté terminada en null
 
-    data_str[(param->data_ind.len) - 2] = '\0';
+        char *data_str = (char*)malloc(param->data_ind.len + 1);
 
-    // Imprimir la cadena de caracteres recibida
-    ESP_LOGI(SPP_TAG, "Data received: %s", data_str);
+        memcpy(data_str, param->data_ind.data, param->data_ind.len);
 
-    for(int i=0; i < strlen(data_str); i++){
+        data_str[(param->data_ind.len) - 2] = '\0';
+ 
+ 
+        ESP_LOGI(SPP_TAG,"Data recived: %s",data_str);
+
+        /*
+        for(int i=0; i < strlen(data_str); i++){
             printf("%c\n", data_str[i]);
-        }
-    
-    printf("Tarea ejecutándose en el núcleo %d\n", xPortGetCoreID());
+        }*/
 
-       if( strlen(data_str) !=  0 && marc_timepo == 0 && gpio_get_level(SENSOR_IR) == 1){
+        printf("Tarea ejecutandose en el nucleo %d\n", xPortGetCoreID());
+
+
+        if( strlen(data_str) !=  0 && marc_timepo == 0 && gpio_get_level(SENSOR_IR) == 1){
             marc_timepo = 1;
             user = data_str;
             ESP_LOGI(SPP_TAG,"111: %s %i",user, marc_timepo);
@@ -269,8 +268,6 @@ static void esp_spp_cb(esp_spp_cb_event_t event, esp_spp_cb_param_t *param)
             ESP_LOGI(SPP_TAG,"222: %s %i",pass, marc_timepo);
             xTaskCreatePinnedToCore(tarea_paralela, "Tarea Paralela", 2048, NULL, 1, NULL, 1); //nucleo 1
         }
-
-    free(data_str); // Liberar la memoria asignada dinámicamente
 
 #else
         gettimeofday(&time_new, NULL);
@@ -365,7 +362,7 @@ void app_main(void)
     mcpwm_config();
     pin_initialize();
     init_irs();
-
+   
     char bda_str[18] = {0};
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -433,20 +430,21 @@ void app_main(void)
     esp_bt_gap_set_pin(pin_type, 0, pin_code);
 
     ESP_LOGI(SPP_TAG, "Own address:[%s]", bda2str((uint8_t *)esp_bt_dev_get_address(), bda_str, sizeof(bda_str)));
+
 }
 
-///////////////////////////////7
+
 void tarea_paralela(void *pvParameters) {
 
     //Add delay, since it takes time for servo to rotate, usually 200ms/60degree rotation under 5V power supply 
-    // Código de la tarea
+    // CÃ³digo de la tarea
     if(gpio_get_level(SENSOR_IR)==1){
-    printf("Tarea ejecutándose en el núcleo %d\n", xPortGetCoreID());
+    printf("Tarea ejecutandose en el nucleo %d\n", xPortGetCoreID());
     if( strlen(user) != 0 &&  strlen(pass) != 0 ){
                 if (strcmp(user,user1) != 0 || strcmp(pass,pass1) != 0){
                     incorrect_ind = false;
-                    printf("Resultado de la comparación Pass: %d\n", strcmp(pass, pass1));
-                    printf("Resultado de la comparación User: %d\n", strcmp(user, user1));
+                    printf("Resultado de la comparacion Pass: %d\n", strcmp(pass, pass1));
+                    printf("Resultado de la comparacion User: %d\n", strcmp(user, user1));
 
                     printf("Resultado len pass: %d\n", strlen(pass));
                     printf("Resultado len pass1: %d\n", strlen(pass1));
@@ -455,7 +453,7 @@ void tarea_paralela(void *pvParameters) {
                     printf("Resultado user1: %d\n", strlen(user1));
 
                 }
-
+                
                 for(int l = 0; l < strlen(pass1); l++){
                     printf("%c\n", pass1[l]);
                 }
@@ -463,14 +461,14 @@ void tarea_paralela(void *pvParameters) {
                 for(int j = 0; j < strlen(pass); j++){
                     printf("%c\n", pass[j]);
                 }
-
+                
                 for(int j=0; j<5; j++){
 
                     switch (incorrect_ind)
                     {
                     case false:
 
-                        ESP_LOGE(TAG1, "error usuario/contrasña");
+                        ESP_LOGE(TAG1, "error usuario/contraseña");
 
                         gpio_set_level(LEDR, 1);
                         gpio_set_level(BUZZER, 1);
@@ -494,6 +492,8 @@ void tarea_paralela(void *pvParameters) {
 
                 }
 
+                user = "";
+                pass = "";
                 incorrect_ind = true;
                 bandera = 0;
                     
@@ -504,6 +504,7 @@ void tarea_paralela(void *pvParameters) {
     vTaskDelete(NULL);
 }
 
+//////////////parametros Servo
 void mover_servo(void *pvParameters){
 
     if(strlen(user) == 0 && strlen(pass)==0 && gpio_get_level(SENSOR_IR)==1 && bandera == 0){
@@ -526,6 +527,7 @@ void mover_servo(void *pvParameters){
     vTaskDelete(NULL);
 }
 
+////////////////////Interrupcion
 esp_err_t init_irs() {
 
     gpio_config_t pGPIOConfig;
