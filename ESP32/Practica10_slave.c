@@ -20,12 +20,16 @@ last modified: 01/04/24
 #define RXD_PIN GPIO_NUM_3
 
 static const char *TAG = "UART";
+long key;
 
 ///////////////////Puente H
 #define M1_A 32
 #define M1_B 33
 #define L 0
 #define H 1
+//char* R_str = "2961";
+//char* B_str = "2800";
+//char* G_str = "2920";
 
 esp_err_t pinout_initialize();
 esp_err_t forward();
@@ -67,16 +71,8 @@ esp_err_t stop(){
 }
 
 /////////////////////////////////Uart
-static void uart_task(void *pvParameters)
-{
+static void uart_task(void *pvParameters){
 uint8_t *data = (uint8_t *) malloc(BUF_SIZE); //puntero para almacenar la data que llega
-char* R_str = "255\r\n";
-char* B_str = "200";
-char* G_str = "45";
-char* str[80];
-
-
-
     while (true) {
         /* Clear space memory */
         bzero(data, BUF_SIZE); //Borramos el espacio de memoria que este en data
@@ -87,8 +83,6 @@ char* str[80];
         {
             continue;
         }
-        // si es diferente de cero lo volvemos a leer
-        /* Write data back to the UART */
 
         uart_write_bytes(UART_PORT, (const char *) data, len);
         uart_flush(UART_PORT);
@@ -98,22 +92,28 @@ char* str[80];
 
         char data_str[len + 1]; // Buffer para almacenar los datos como una cadena terminada en null
         memcpy(data_str, data, len); // Copiar los datos recibidos al buffer de cadena
-        data_str[len] = '\0'; // Asegurarse de que la cadena esté terminada en null
+        //data_str[len] = '\0'; // Asegurarse de que la cadena esté terminada en null
+        data_str[len - 2] = '\0';
+        char *endptr;
+        key = strtol(data_str, &endptr, 10);
 
+        if (endptr == data_str) {
+        printf("Error: No se pudo convertir la cadena a un entero.\n");
+        }
 
-            if(!strcmp(R_str, data_str)){
+            if(key == 2961){
             ESP_ERROR_CHECK(stop());
-            vTaskDelay(pdMS_TO_TICKS(500));
+            vTaskDelay(pdMS_TO_TICKS(5000));
             }
 
-            if(!strcmp(G_str,data_str)){
+            if(key == 2920){
             ESP_ERROR_CHECK(forward());
-            vTaskDelay(pdMS_TO_TICKS(500));
+            vTaskDelay(pdMS_TO_TICKS(5000));
             }
 
-            if(!strcmp(B_str,data_str)){
+            if(key == 4095){
             ESP_ERROR_CHECK(reverse());
-            vTaskDelay(pdMS_TO_TICKS(500));
+            vTaskDelay(pdMS_TO_TICKS(5000));
             }
             
 
