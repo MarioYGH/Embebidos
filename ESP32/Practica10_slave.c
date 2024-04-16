@@ -12,15 +12,17 @@ last modified: 01/04/24
 #include "esp_log.h"
 #include "driver/gpio.h"
 #include "driver/uart.h"
+#include "freertos/queue.h"
 
 #define UART_PORT UART_NUM_1
 #define BUF_SIZE 1024 
 #define TASK_MEMORY 2028
 #define TXD_PIN GPIO_NUM_1
 #define RXD_PIN GPIO_NUM_3
+static QueueHandle_t uart_queue;
 
 static const char *TAG = "UART";
-long key;
+int key;
 
 ///////////////////Puente H
 #define M1_A 32
@@ -72,53 +74,61 @@ esp_err_t stop(){
 
 /////////////////////////////////Uart
 static void uart_task(void *pvParameters){
-uint8_t *data = (uint8_t *) malloc(BUF_SIZE); //puntero para almacenar la data que llega
+
+    uart_event_t event;
+    char *data = (char *) malloc(BUF_SIZE); //puntero para almacenar la data que llega
+
     while (true) {
-        /* Clear space memory */
+
+        if (xQueueReceive(uart_queue, (void *)&event, portMAX_DELAY)){
         bzero(data, BUF_SIZE); //Borramos el espacio de memoria que este en data
 
-        /* Read data from the UART */
-        int len = uart_read_bytes(UART_PORT, data, BUF_SIZE, pdMS_TO_TICKS(100));
-        if (len==0) //si el tamaño de lo que llego es cero, continua
+        switch (event.type)
         {
-            continue;
-        }
+        case UART_DATA:
+            uart_read_bytes(UART_PORT, data, event.size, pdMS_TO_TICKS(100));
+            uart_write_bytes(UART_PORT, (const char *) data, event.size);
+            uart_flush(UART_PORT);
 
-        uart_write_bytes(UART_PORT, (const char *) data, len);
-        uart_flush(UART_PORT);
- 
-        ESP_LOGI(TAG, "Data recived: %s",data); //imprimimos en consola lo que acaba de llegar
-    
+            ESP_LOGI(TAG, "Data recived: %s",data); //imprimimos en consola lo que acaba de llegar
 
-        char data_str[len + 1]; // Buffer para almacenar los datos como una cadena terminada en null
-        memcpy(data_str, data, len); // Copiar los datos recibidos al buffer de cadena
-        //data_str[len] = '\0'; // Asegurarse de que la cadena esté terminada en null
-        data_str[len - 2] = '\0';
-        char *endptr;
-        key = strtol(data_str, &endptr, 10);
+            for (size_t i = 0; i < event.size - 2; i++)
+            {
+                key = atoi(data);
 
-        if (endptr == data_str) {
-        printf("Error: No se pudo convertir la cadena a un entero.\n");
-        }
+                switch (key)
+                {
+                case 1660: //Rojo
+                    ESP_ERROR_CHECK(stop());
+                    vTaskDelay(pdMS_TO_TICKS(5000));
+                    break;
 
-            if(key == 2961){
-            ESP_ERROR_CHECK(stop());
-            vTaskDelay(pdMS_TO_TICKS(5000));
+                case 1500: //VErde 1500
+                    ESP_ERROR_CHECK(forward());
+                    vTaskDelay(pdMS_TO_TICKS(5000));
+                    ESP_ERROR_CHECK(stop());
+                    break;
+                
+                case 1590: //Azul
+                    ESP_ERROR_CHECK(reverse());
+                    vTaskDelay(pdMS_TO_TICKS(5000));
+                    ESP_ERROR_CHECK(stop());
+                    break;
+                
+                default:
+                    ESP_ERROR_CHECK(stop());
+                    break;
+                }
             }
 
-            if(key == 2920){
-            ESP_ERROR_CHECK(forward());
-            vTaskDelay(pdMS_TO_TICKS(5000));
-            }
-
-            if(key == 4095){
-            ESP_ERROR_CHECK(reverse());
-            vTaskDelay(pdMS_TO_TICKS(5000));
-            }
-            
-
+            break;
         
+        default:
+            break;
+        }
+     
     }
+}
 }
 
 
@@ -130,12 +140,17 @@ esp_err_t uart_initialize(){
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+        .source_clk = UART_SCLK_APB,
     };
 
-    // We won't use a buffer for sending data.
-    ESP_ERROR_CHECK(uart_driver_install(UART_PORT, BUF_SIZE, 0, 0, NULL, 0));
-    ESP_ERROR_CHECK(uart_param_config(UART_PORT, &uart_config));
-    ESP_ERROR_CHECK(uart_set_pin(UART_PORT, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE));
+    uart_param_config(UART_PORT, &uart_config);
+
+    uart_set_pin(UART_PORT, TXD_PIN, RXD_PIN, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+
+    uart_driver_install(UART_PORT, BUF_SIZE, BUF_SIZE, 5, &uart_queue, 0);
+    xTaskCreate(uart_task, "uart_task", TASK_MEMORY, NULL, 5, NULL);
+    
+    ESP_LOGI(TAG, "init uart complete");
 
     return ESP_OK;
 }
