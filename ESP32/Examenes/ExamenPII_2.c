@@ -139,6 +139,15 @@ esp_err_t alarma(){
     gpio_set_level(BUZZER, 1);
     vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_10_CM));
     gpio_set_level(BUZZER, 0);
+    gpio_set_level(BUZZER, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_10_CM));
+    gpio_set_level(BUZZER, 0);
+    gpio_set_level(BUZZER, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_10_CM));
+    gpio_set_level(BUZZER, 0);
+    gpio_set_level(BUZZER, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_10_CM));
+    gpio_set_level(BUZZER, 0);
 
     bdc_motor_set_speed(motor,100);
     bdc_motor_set_speed(motor1,100);
@@ -154,6 +163,15 @@ esp_err_t alarma(){
     gpio_set_level(BUZZER, 1);
     vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_15_CM));
     gpio_set_level(BUZZER, 0);
+    gpio_set_level(BUZZER, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_15_CM));
+    gpio_set_level(BUZZER, 0);
+    gpio_set_level(BUZZER, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_15_CM));
+    gpio_set_level(BUZZER, 0);
+    gpio_set_level(BUZZER, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_15_CM));
+    gpio_set_level(BUZZER, 0);
 
     bdc_motor_set_speed(motor,200);
     bdc_motor_set_speed(motor1,200);
@@ -165,6 +183,15 @@ esp_err_t alarma(){
 
     if (distance <= 20)
     {
+    gpio_set_level(BUZZER, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_20_CM));
+    gpio_set_level(BUZZER, 0);
+    gpio_set_level(BUZZER, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_20_CM));
+    gpio_set_level(BUZZER, 0);
+    gpio_set_level(BUZZER, 1);
+    vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_20_CM));
+    gpio_set_level(BUZZER, 0);
     gpio_set_level(BUZZER, 1);
     vTaskDelay(pdMS_TO_TICKS(1000 / FREQ_20_CM));
     gpio_set_level(BUZZER, 0);
