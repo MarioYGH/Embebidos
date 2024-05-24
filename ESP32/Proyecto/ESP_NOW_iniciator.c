@@ -14,6 +14,7 @@
 
 static uint8_t peer_mac[ESP_NOW_ETH_ALEN] = {0xb0, 0xa7, 0x32, 0x34, 0x54, 0x5c}; // add del otro ESP
 // b0:a7:32:34:54:5c add ESP 2
+// c8:f0:9e:ec:0d:18 add ESP 1
 
 static const char *TAG = "esp_now_init";
 static esp_err_t init_wifi(void) // Inicializa el wifi
@@ -84,9 +85,9 @@ void app_main(void)
     ESP_ERROR_CHECK(init_esp_now());          // funcion init esp_now
     ESP_ERROR_CHECK(register_peer(peer_mac)); // funcion register peer
 
-    uint8_t dataR = "R";
-    uint8_t dataG = "G";
-    uint8_t dataB = "B";
+    uint8_t dataR [] = "R";
+    uint8_t dataG [] = "G";
+    uint8_t dataB [] = "B";
     
     uint8_t count = 0;
 
