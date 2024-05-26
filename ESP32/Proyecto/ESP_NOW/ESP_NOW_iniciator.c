@@ -13,8 +13,9 @@
 #define ESP_CHANNEL 1
 
 static uint8_t peer_mac[ESP_NOW_ETH_ALEN] = {0xb0, 0xa7, 0x32, 0x34, 0x54, 0x5c}; // add del otro ESP
-// b0:a7:32:34:54:5c add ESP 2
-// c8:f0:9e:ec:0d:18 add ESP 1
+// b0:a7:32:34:54:5c add ESP 2 0xb0, 0xa7, 0x32, 0x34, 0x54, 0x5c
+// c8:f0:9e:ec:0d:18 add ESP 1 0xc8, 0xf0, 0x9e, 0xec, 0x0d, 0x18
+// d8:bc:38:f8:b5:94 add ESP 3 0xd8, 0xbc, 0x38, 0xf8, 0xb5, 0x94
 
 static const char *TAG = "esp_now_init";
 static esp_err_t init_wifi(void) // Inicializa el wifi
