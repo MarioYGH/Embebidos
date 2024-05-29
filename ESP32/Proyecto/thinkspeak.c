@@ -68,6 +68,7 @@ void send_data_to_thingspeak(void *pvParameters) {
             ESP_LOGI(TAG, "Message sent Failed");
             goto exit;
         }
+        vTaskDelay(10000 / portTICK_PERIOD_MS); // Aumentar tiempo de espera entre reintentos
     }
 exit:
     SHT1x_DeInit(&Handler);
