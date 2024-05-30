@@ -25,9 +25,6 @@ static uint8_t peer_mac_2[ESP_NOW_ETH_ALEN] = {0xd8, 0xbc, 0x38, 0xf8, 0xb5, 0x9
 static const char *TAG = "esp_now_init";
 static uint8_t count = 0;
 
-// Handle for the interrupt task
-TaskHandle_t gpio_task_handle = NULL;
-
 static esp_err_t init_wifi(void)
 {
     wifi_init_config_t wifi_init_config = WIFI_INIT_CONFIG_DEFAULT();
@@ -91,7 +88,6 @@ static esp_err_t esp_now_send_data(const uint8_t *peer_addr, const uint8_t *data
 
 static void gpio_task_example(void* arg)
 {
-    uint32_t io_num;
     uint8_t data1[] = "1";
     uint8_t data2[] = "2";
     uint8_t data3[] = "3";
@@ -136,14 +132,6 @@ void isr_handler(void *args)
     count++;
 }
 
-void gpio_task(void *pvParameters)
-{
-    while (true)
-    {
-        vTaskDelay(pdMS_TO_TICKS(1000)); // Espera 1 segundo
-        // Aquí podrías agregar lógica adicional si necesitas manejar la interrupción de manera especial
-    }
-}
 
 esp_err_t init_iris()
 {
@@ -173,5 +161,5 @@ void app_main(void)
 
     // Crear una tarea para manejar el GPIO y el envío de datos
     xTaskCreatePinnedToCore(gpio_task_example, "gpio_task_example", 2048, NULL, 10, NULL, 1); // Núcleo 1
-    xTaskCreatePinnedToCore(gpio_task, "gpio_task", 2048, NULL, 10, &gpio_task_handle, 0); // Núcleo 0
+
 }
