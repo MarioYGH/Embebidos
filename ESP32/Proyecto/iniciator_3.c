@@ -20,7 +20,7 @@
 #define BUTTON GPIO_NUM_18
 
 static uint8_t peer_mac_1[ESP_NOW_ETH_ALEN] = {0xc8, 0xf0, 0x9e, 0xec, 0x0d, 0x18};
-static uint8_t peer_mac_2[ESP_NOW_ETH_ALEN] = {0xd8, 0xbc, 0x38, 0xf8, 0xb5, 0x94};
+static uint8_t peer_mac_2[ESP_NOW_ETH_ALEN] = {0x08, 0xd1, 0xf9, 0xe7, 0x96, 0xb8};
 
 static const char *TAG = "esp_now_init";
 static uint8_t count = 0;
