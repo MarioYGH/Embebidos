@@ -94,7 +94,7 @@ static esp_err_t init_wifi(void) {
 void recv_cb(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len) {
     ESP_LOGI(TAG, "Data received: " MACSTR ", %s", MAC2STR(esp_now_info->src_addr), data);
 
-        switch (data[1]) {
+        switch (data[0]) {
             case '1':
                 ESP_LOGI(TAG, "Received T1");
                 T1();
