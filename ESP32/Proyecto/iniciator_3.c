@@ -101,21 +101,18 @@ static void gpio_task_example(void* arg)
         switch (count)
         {
             case 1:
-                esp_now_send_data(peer_mac_1, data1, sizeof(data1));
-                esp_now_send_data(peer_mac_2, data1, sizeof(data1));
-                vTaskDelay(pdMS_TO_TICKS(1000));
+                esp_now_send_data(peer_mac_1, data1, sizeof(data1)-1);
+                esp_now_send_data(peer_mac_2, data1, sizeof(data1)-1);
                 break;
 
             case 2:
                 esp_now_send_data(peer_mac_1, data2, sizeof(data2));
                 esp_now_send_data(peer_mac_2, data2, sizeof(data2));
-                vTaskDelay(pdMS_TO_TICKS(1000));
                 break;
 
             case 3:
                 esp_now_send_data(peer_mac_1, data3, sizeof(data3));
                 esp_now_send_data(peer_mac_2, data3, sizeof(data3));
-                vTaskDelay(pdMS_TO_TICKS(1000));
                 break;
 
             default:
@@ -123,7 +120,8 @@ static void gpio_task_example(void* arg)
         }
 
         ESP_LOGI(TAG, "Button pressed, count: %d", count);
-        vTaskDelay(pdMS_TO_TICKS(50)); // Pequeño retardo para evitar múltiples cuentas por una sola pulsación
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        //vTaskDelay(pdMS_TO_TICKS(50)); // Pequeño retardo para evitar múltiples cuentas por una sola pulsación
     }
 }
 
