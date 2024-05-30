@@ -67,8 +67,9 @@ esp_err_t mcpwm_config();
 esp_err_t init_motor();
 static inline uint32_t angle_to_compare(int angle);
 
+void update_servo_angle(int angle);
+
 void sensor_task(void *pvParameter);
-void servo_task(void *pvParameter);
 
 void T1();
 void T2();
@@ -93,7 +94,6 @@ static esp_err_t init_wifi(void) {
 void recv_cb(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int data_len) {
     ESP_LOGI(TAG, "Data received: " MACSTR ", %s", MAC2STR(esp_now_info->src_addr), data);
 
-    if (data_len > 3) {
         switch (data[1]) {
             case '1':
                 ESP_LOGI(TAG, "Received T1");
@@ -112,7 +112,6 @@ void recv_cb(const esp_now_recv_info_t *esp_now_info, const uint8_t *data, int d
                 break;
         }
     }
-}
 
 void send_cb(const uint8_t *mac_addr, esp_now_send_status_t status) {
     if (status == ESP_NOW_SEND_SUCCESS) {
@@ -154,11 +153,10 @@ void app_main(void) {
     ESP_ERROR_CHECK(init_esp_now());
     ESP_ERROR_CHECK(register_peer(peer_mac));
     ESP_ERROR_CHECK(init_motor());
+    ESP_ERROR_CHECK(mcpwm_config());
 
     // Tareas en núcleo 0
-    xTaskCreatePinnedToCore(sensor_task, "sensor_task", 4096, NULL, 1, NULL, 0);
-    xTaskCreatePinnedToCore(servo_task, "servo_task", 4096, NULL, 1, NULL, 0);
-
+    xTaskCreatePinnedToCore(sensor_task, "sensor_task", 4096, NULL, 1, NULL, 1);
     // Tareas en núcleo 1
     //xTaskCreatePinnedToCore(sht1x_task, "sht1x_task", 4096, NULL, 1, NULL, 0);
     //xTaskCreatePinnedToCore(esp_now_task, "esp_now_task", 4096, NULL, 1, NULL, 1);
@@ -237,34 +235,9 @@ esp_err_t init_motor() {
     return ESP_OK;
 }
 
-void servo_task(void *pvParameter) {
-    ESP_ERROR_CHECK(mcpwm_config());
-
-    int previous_position = -1; // Variable para almacenar la posición anterior del servo
-
-    while (true) {
-        // Verificar si la posición ha cambiado
-        if (position_flag != previous_position) {
-            previous_position = position_flag;
-
-            switch (position_flag) {
-                case 0:
-                    ESP_LOGI(TAG, "Setting angle of rotation: 120");
-                    ESP_ERROR_CHECK(mcpwm_comparator_set_compare_value(comparator, angle_to_compare(120)));
-                    break;
-                case 1:
-                    ESP_LOGI(TAG, "Setting angle of rotation: 90");
-                    ESP_ERROR_CHECK(mcpwm_comparator_set_compare_value(comparator, angle_to_compare(90)));
-                    break;
-                default:
-                    ESP_LOGE(TAG, "Invalid position flag");
-                    break;
-            }
-        }
-
-        // Esperar antes de verificar nuevamente
-        vTaskDelay(pdMS_TO_TICKS(100)); // Puedes ajustar este valor según sea necesario
-    }
+void update_servo_angle(int angle) {
+    ESP_LOGI(TAG, "Setting angle of rotation: %d", angle);
+    ESP_ERROR_CHECK(mcpwm_comparator_set_compare_value(comparator, angle_to_compare(angle)));
 }
 
 esp_err_t config_ADC() {
@@ -350,27 +323,30 @@ static inline uint32_t angle_to_compare(int angle) {
 }
 
 void T2() { //bajar temperatura
+    ESP_LOGI(TAG, "Executing T2");
     bdc_motor_set_speed(motor,300);
     bdc_motor_set_speed(motor1,400);
-    position_flag = 0;
+    update_servo_angle(90);
     ESP_ERROR_CHECK(bdc_motor_coast(motor));
     ESP_ERROR_CHECK(bdc_motor_forward(motor1));
     
 }
 
 void T3() { //subir T y H
+    ESP_LOGI(TAG, "Executing T3");
     bdc_motor_set_speed(motor,300);
     bdc_motor_set_speed(motor1,300);
-    position_flag = 1;
+    update_servo_angle(120);
     ESP_ERROR_CHECK(bdc_motor_forward(motor));
     ESP_ERROR_CHECK(bdc_motor_coast(motor1));
     
 }
 
 void T1() { //
+    ESP_LOGI(TAG, "Executing T1");
     bdc_motor_set_speed(motor,150);
     bdc_motor_set_speed(motor1,150);
-    position_flag = 1;
+    update_servo_angle(30);
     ESP_ERROR_CHECK(bdc_motor_forward(motor));
     ESP_ERROR_CHECK(bdc_motor_forward(motor1));
 }
