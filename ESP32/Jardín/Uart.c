@@ -32,6 +32,7 @@ static const char *TAG = "esp_now_init";
 static uint8_t count = 0;
 static float temperature = 0.0;
 static float humidity = 0.0;
+static float voltage = 0.0;
 
 void connect_wifi(void) {
     esp_err_t ret = nvs_flash_init();
@@ -86,25 +87,27 @@ void recv_cb(const uint8_t *mac_addr, const uint8_t *data, int data_len)
 {
     float received_temp = 0.0;
     float received_hum = 0.0;
+    float received_voltage = 0.0;
     int matches;
 
     char temp_buffer[data_len + 1];
     strncpy(temp_buffer, (char *)data, data_len);
     temp_buffer[data_len] = '\0';
 
-    matches = sscanf(temp_buffer, "Temperature: %f, Humidity: %f", &received_temp, &received_hum);
+    matches = sscanf(temp_buffer, "Temperature: %f, Humidity: %f, Voltage: %f", &received_temp, &received_hum, &received_voltage);
 
-    if (matches == 2) {
-        ESP_LOGI(TAG, "Data received from: " MACSTR ", Temperature: %.2f, Humidity: %.2f", MAC2STR(mac_addr), received_temp, received_hum);
+    if (matches == 3) {
+        ESP_LOGI(TAG, "Data received from: " MACSTR ", Temperature: %.2f, Humidity: %.2f, Voltage: %.2f", MAC2STR(mac_addr), received_temp, received_hum, received_voltage);
 
         temperature = received_temp;
         humidity = received_hum;
+        voltage = received_voltage;
 
         char uart_data[100];
-        snprintf(uart_data, sizeof(uart_data), "/*%2.2f, %2.2f */", temperature, humidity);
+        snprintf(uart_data, sizeof(uart_data), "/*%2.2f, %2.2f, %2.2f*/", temperature, humidity, voltage);
         uart_write_bytes(UART_PORT_NUM, uart_data, strlen(uart_data));
     } else {
-        ESP_LOGW(TAG, "Invalid format: sscanf could not parse Temperature and Humidity");
+        ESP_LOGW(TAG, "Invalid format: sscanf could not parse Temperature, Humidity, and Voltage");
     }
 }
 
