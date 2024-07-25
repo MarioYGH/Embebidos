@@ -187,24 +187,23 @@ void sensor_task(void *pvParameter) {
         if (ret != ESP_OK) {
             printf("Failed to get ADC value: %s\n", esp_err_to_name(ret));
         } else {
-            //printf("Raw data: %d\n", adc_raw);
             voltage = ((adc_raw * 5.0) / 4095.0);
-            //printf("Voltage: %2.2f V\n", voltage);
+            // Formatear los datos del ADC y del sensor en un solo buffer
+            snprintf((char *)sensor_data, SENSOR_DATA_SIZE, "Temperature: %.2f, Humidity: %.2f, Voltage: %.2f", Sample.TempCelsius, Sample.HumidityPercent, voltage);
+
+            // Enviar los datos por ESP-NOW
+            ESP_ERROR_CHECK(esp_now_send_data(peer_mac, sensor_data, strlen((char *)sensor_data)));
         }
 
         SHT1x_ReadSample(&Handler, &Sample);
-        // Formatear los datos del sensor
-        snprintf((char *)sensor_data, SENSOR_DATA_SIZE, "Temperature: %.2f, Humidity: %.2f", Sample.TempCelsius, Sample.HumidityPercent);
-
-        // Enviar los datos del sensor por ESP-NOW
-        ESP_ERROR_CHECK(esp_now_send_data(peer_mac, sensor_data, strlen((char *)sensor_data)));
-
+        
         // Envío de datos por ESP-NOW
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
     SHT1x_DeInit(&Handler);
 }
+
 
 esp_err_t init_motor() {
     ESP_LOGI(TAG, "Create BOMBA");
