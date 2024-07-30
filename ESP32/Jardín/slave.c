@@ -48,7 +48,7 @@ uint8_t sensor_data[SENSOR_DATA_SIZE]; // Ajusta el tamaño según sea necesario
 int position_flag = 0; // Variable para determinar la posición del servo
 
 static const char *TAG = "Main";
-static uint8_t peer_mac[ESP_NOW_ETH_ALEN] = {0x08, 0xd1, 0xf9, 0xe7, 0x9f, 0xd8};
+static uint8_t peer_mac[ESP_NOW_ETH_ALEN] = {0xc8, 0xf0, 0x9e, 0xec, 0x0d, 0x18};
 //08:d1:f9:e7:9f:d8 servo en shield
 //c8:f0:9e:ec:0d:18 servo 1 
 
@@ -341,7 +341,7 @@ void T2() { //bajar temperatura
     ESP_LOGI(TAG, "Executing T2");
     bdc_motor_set_speed(motor, 300);
     bdc_motor_set_speed(motor1, 400);
-    bdc_motor_set_speed(motor2, 150);
+    bdc_motor_set_speed(motor2, 100);
     update_servo_angle(90);
     ESP_ERROR_CHECK(bdc_motor_coast(motor));
     ESP_ERROR_CHECK(bdc_motor_forward(motor1));
@@ -352,7 +352,7 @@ void T3() { //subir T y H
     ESP_LOGI(TAG, "Executing T3");
     bdc_motor_set_speed(motor, 300);
     bdc_motor_set_speed(motor1, 300);
-    bdc_motor_set_speed(motor2, 380);
+    bdc_motor_set_speed(motor2, 200);
     update_servo_angle(120);
     ESP_ERROR_CHECK(bdc_motor_forward(motor));
     ESP_ERROR_CHECK(bdc_motor_coast(motor1));
