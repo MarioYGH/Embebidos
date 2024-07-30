@@ -25,7 +25,7 @@
 #define TXD_PIN GPIO_NUM_1
 #define RXD_PIN GPIO_NUM_3
 
-static uint8_t peer_mac_1[ESP_NOW_ETH_ALEN] = {0xc8, 0xf0, 0x9e, 0xec, 0x0d, 0x18};
+static uint8_t peer_mac_1[ESP_NOW_ETH_ALEN] = {0x08, 0xd1, 0xf9, 0xe7, 0x9f, 0xd8};
 static uint8_t peer_mac_2[ESP_NOW_ETH_ALEN] = {0x08, 0xd1, 0xf9, 0xe7, 0x96, 0xb8};
 
 static const char *TAG = "esp_now_init";
