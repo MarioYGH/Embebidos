@@ -340,7 +340,7 @@ static inline uint32_t angle_to_compare(int angle) {
 void T2() { //bajar temperatura
     ESP_LOGI(TAG, "Executing T2");
     bdc_motor_set_speed(motor, 300);
-    bdc_motor_set_speed(motor1, 400);
+    bdc_motor_set_speed(motor1, 100);
     bdc_motor_set_speed(motor2, 100);
     update_servo_angle(90);
     ESP_ERROR_CHECK(bdc_motor_coast(motor));
@@ -350,10 +350,10 @@ void T2() { //bajar temperatura
 
 void T3() { //subir T y H
     ESP_LOGI(TAG, "Executing T3");
-    bdc_motor_set_speed(motor, 300);
+    bdc_motor_set_speed(motor, 200);
     bdc_motor_set_speed(motor1, 300);
     bdc_motor_set_speed(motor2, 200);
-    update_servo_angle(120);
+    update_servo_angle(180);
     ESP_ERROR_CHECK(bdc_motor_forward(motor));
     ESP_ERROR_CHECK(bdc_motor_coast(motor1));
     ESP_ERROR_CHECK(bdc_motor_forward(motor2));
@@ -361,7 +361,7 @@ void T3() { //subir T y H
 
 void T1() { //
     ESP_LOGI(TAG, "Executing T1");
-    bdc_motor_set_speed(motor, 150);
+    bdc_motor_set_speed(motor, 300);
     bdc_motor_set_speed(motor1, 150);
     bdc_motor_set_speed(motor2, 50);
     update_servo_angle(30);
@@ -369,3 +369,4 @@ void T1() { //
     ESP_ERROR_CHECK(bdc_motor_forward(motor1));
     ESP_ERROR_CHECK(bdc_motor_coast(motor2));
 }
+
